@@ -16,3 +16,15 @@ pom.xml.asc
 /doc
 CHANGELOG.md
 LICENSE
+# clj-kondo cache
+.clj-kondo/
+
+# LSP cache
+.lsp/
+
+# Documentation (generated)
+doc/
+
+# License files
+LICENSE
+CHANGELOG.md
