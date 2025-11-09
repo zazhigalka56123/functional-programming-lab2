@@ -93,19 +93,16 @@
 
 ### Property-based тестирование ([`test/prefix_tree/property_test.clj`](test/prefix_tree/property_test.clj))
 
-Используется библиотека `clojure.test.check`.  
-Проверяются следующие свойства:
+Используется библиотека `clojure.test.check`. Проверяются следующие свойства:
 
-1. **Идентичность моноида** ([`property_test.clj:11-16`](test/prefix_tree/property_test.clj#L11-L16)): `(mappend t empty-tree) == t`
-2. **Ассоциативность моноида** ([`property_test.clj:18-26`](test/prefix_tree/property_test.clj#L18-L26)): `(mappend (mappend a b) c) == (mappend a (mappend b c))`
-3. **Идемпотентность добавления** ([`property_test.clj:41-47`](test/prefix_tree/property_test.clj#L41-L47)): повторное добавление слова не меняет дерево
-4. **Корректность удаления** ([`property_test.clj:36-39`](test/prefix_tree/property_test.clj#L36-L39)): удалённое слово не содержится в дереве
-5. **Сохранение порядка** ([`property_test.clj:64-69`](test/prefix_tree/property_test.clj#L64-L69)): `tree->seq` возвращает слова в лексикографическом порядке
-6. **Корректность map** ([`property_test.clj:76-81`](test/prefix_tree/property_test.clj#L76-L81)): `map-tree` сохраняет количество элементов
-7. **Корректность filter** ([`property_test.clj:90-96`](test/prefix_tree/property_test.clj#L90-L96)): все элементы после фильтрации удовлетворяют предикату
-8. **Эквивалентность свёрток** ([`property_test.clj:99-106`](test/prefix_tree/property_test.clj#L99-L106)): `reduce-left` эквивалентен стандартному `reduce`
-9. **Рефлексивность равенства** ([`property_test.clj:116-118`](test/prefix_tree/property_test.clj#L116-L118)): дерево равно самому себе
-10. **Коммутативность merge** ([`property_test.clj:144-151`](test/prefix_tree/property_test.clj#L144-L151)): объединение деревьев коммутативно для множеств
+1. **Моноид**: нейтральный элемент и ассоциативность `mappend`
+2. **Добавление**: идемпотентность и корректность `tree-contains?`
+3. **Удаление**: удалённое слово отсутствует в дереве
+4. **Последовательность**: лексикографический порядок слов
+5. **Map и filter**: сохранение размера и корректность предиката
+6. **Свёртки**: эквивалентность `reduce-left` стандартному `reduce`
+7. **Равенство**: рефлексивность и симметричность
+8. **Объединение**: коммутативность для множеств слов
 
 ### Кастомные генераторы ([`test/prefix_tree/generators.clj`](test/prefix_tree/generators.clj))
 

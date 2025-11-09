@@ -1,5 +1,5 @@
 (ns prefix-tree.property-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.string :as str]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.clojure-test :refer [defspec]]
@@ -73,7 +73,7 @@
 (defspec map-preserves-size 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [t (reduce tree/add tree/empty-tree words)
-                      t' (tree/map-tree clojure.string/upper-case t)]
+                      t' (tree/map-tree str/upper-case t)]
                   (= (count (tree/tree->seq t))
                      (count (tree/tree->seq t'))))))
 

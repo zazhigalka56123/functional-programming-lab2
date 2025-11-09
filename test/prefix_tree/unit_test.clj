@@ -1,6 +1,10 @@
 (ns prefix-tree.unit-test
-  (:require [clojure.test :refer :all]
-            [prefix-tree.core :refer :all]))
+  (:require [clojure.test :refer [deftest testing is]]
+            [clojure.string :as str]
+            [prefix-tree.core :refer [add empty-tree filter-tree map-tree
+                                      mappend reduce-left reduce-right
+                                      tree->seq tree-contains? tree-equal?
+                                      tree-remove]]))
 
 (deftest add-and-contains-test
   (testing "Добавление и проверка слов"
@@ -46,7 +50,7 @@
     (let [words ["a" "i" "in" "inn" "tea" "ted" "ten" "to"]
           tree (reduce add empty-tree words)]
       (testing "map-tree"
-        (let [mapped-tree (map-tree clojure.string/upper-case tree)
+        (let [mapped-tree (map-tree str/upper-case tree)
               expected-words #{"A" "I" "IN" "INN" "TEA" "TED" "TEN" "TO"}]
           (is (= expected-words (set (tree->seq mapped-tree))))))
       (testing "filter-tree"
@@ -56,7 +60,7 @@
       (testing "reduce-left"
         (is (= 18 (reduce-left (fn [acc v] (+ acc (count v))) 0 tree))))
       (testing "reduce-right"
-        (is (= "to ten ted tea inn in i a" (clojure.string/join " " (reduce-right conj [] tree))))))))
+        (is (= "to ten ted tea inn in i a" (str/join " " (reduce-right conj [] tree))))))))
 
 (deftest monoid-and-equality-test
   (testing "Свойства моноида и равенство"
