@@ -35,4 +35,4 @@
             (fn [t]
               (let [words (tree/tree->seq t)]
                 (gen/tuple (gen/return t)
-                          (gen/elements words))))))
+                           (gen/elements words))))))

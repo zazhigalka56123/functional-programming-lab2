@@ -5,44 +5,44 @@
 
 (defrecord PrefixTree [data]
   api/IPrefixTree
-  
+
   (tree-add [this word]
     (PrefixTree. (assoc-in data (conj (vec word) :end?) true)))
-  
+
   (tree-contains? [this word]
     (boolean (get-in data (conj (vec word) :end?))))
-  
+
   (tree-remove [this word]
     (if-not (api/tree-contains? this word)
       this
       (PrefixTree. (or (remove-recursive data word) {}))))
-  
+
   (tree-to-seq [this]
     (tree->seq-recursive data []))
-  
+
   (tree-map [this f]
     (let [empty (PrefixTree. {})]
       (reduce api/tree-add empty (map f (api/tree-to-seq this)))))
-  
+
   (tree-filter [this pred]
     (let [empty (PrefixTree. {})]
       (reduce api/tree-add empty (filter pred (api/tree-to-seq this)))))
-  
+
   (tree-reduce-left [this f]
     (reduce f (api/tree-to-seq this)))
-  
+
   (tree-reduce-left [this f init]
     (reduce f init (api/tree-to-seq this)))
-  
+
   (tree-reduce-right [this f]
     (reduce f (reverse (api/tree-to-seq this))))
-  
+
   (tree-reduce-right [this f init]
     (reduce f init (reverse (api/tree-to-seq this))))
-  
+
   (tree-merge [this other]
     (PrefixTree. (mappend data (:data other))))
-  
+
   (tree-equal? [this other]
     (tree-equal? data (:data other))))
 

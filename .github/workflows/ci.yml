@@ -37,16 +37,8 @@ jobs:
     - name: Install dependencies
       run: lein deps
     
-    - name: Run linter
+    - name: Run linter (cljfmt)
       run: lein cljfmt check
-    
-    - name: Run linter (kibit)
-      run: lein kibit
-      continue-on-error: true
-    
-    - name: Run linter (bikeshed)
-      run: lein bikeshed --max-line-length 120
-      continue-on-error: true
     
     - name: Run tests
       run: lein test
