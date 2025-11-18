@@ -67,32 +67,32 @@
       (testing "Seqable - seq"
         (is (seq? (seq tree)))
         (is (= #{"a" "b" "c"} (set (seq tree)))))
-      
+
       (testing "Counted - count"
         (is (= 3 (count tree)))
         (is (= 0 (count empty-tree))))
-      
+
       (testing "IPersistentCollection - conj"
         (let [tree2 (conj tree "d")]
           (is (tree-contains? tree2 "d"))
           (is (= 4 (count tree2)))))
-      
+
       (testing "IPersistentCollection - empty"
         (is (tree-equal? empty-tree (empty tree))))
-      
+
       (testing "ILookup - get"
         (is (true? (get tree "a")))
         (is (nil? (get tree "z")))
         (is (= :not-found (get tree "z" :not-found))))
-      
+
       (testing "Associative - contains?"
         (is (contains? tree "a"))
         (is (not (contains? tree "z"))))
-      
+
       (testing "Associative - assoc"
         (let [tree2 (assoc tree "d" true)]
           (is (tree-contains? tree2 "d"))))
-      
+
       (testing "IFn - вызов как функция"
         (is (true? (tree "a")))
         (is (false? (tree "z")))))))

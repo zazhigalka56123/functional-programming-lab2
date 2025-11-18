@@ -1,5 +1,6 @@
 (ns prefix-tree.impl
-  (:require [prefix-tree.api :as api]))
+  (:require [prefix-tree.api :as api]
+            [clojure.string :as str]))
 
 (declare remove-recursive tree->seq-recursive mappend tree-equal?)
 
@@ -24,45 +25,45 @@
     (PrefixTree. (mappend data (.data other))))
 
   (tree-equal? [_ other]
-    (tree-equal? data (.data other))) 
- 
+    (tree-equal? data (.data other)))
+
   clojure.lang.Seqable
   (seq [this]
     (seq (api/tree-to-seq this)))
-  
+
   clojure.lang.Counted
   (count [this]
     (clojure.core/count (api/tree-to-seq this)))
-  
+
   clojure.lang.IPersistentCollection
   (cons [this word]
     (api/tree-add this word))
-  
+
   (empty [_]
     (PrefixTree. {}))
-  
+
   (equiv [_ other]
     (and (instance? PrefixTree other)
          (tree-equal? data (.data other))))
-  
+
   clojure.lang.ILookup
   (valAt [this word]
     (when (api/tree-contains? this word) true))
-  
+
   (valAt [this word not-found]
     (if (api/tree-contains? this word) true not-found))
-  
+
   clojure.lang.Associative
   (containsKey [this word]
     (api/tree-contains? this word))
-  
+
   (entryAt [this word]
     (when (api/tree-contains? this word)
       (clojure.lang.MapEntry/create word true)))
-  
+
   (assoc [this word _]
     (api/tree-add this word))
-  
+
   clojure.lang.IFn
   (invoke [this word]
     (api/tree-contains? this word)))
@@ -93,7 +94,7 @@
   [node prefix]
   (lazy-cat
    (if (:end? node)
-     [(apply str (reverse prefix))]
+     [(str/reverse (str/join prefix))]
      [])
    (mapcat (fn [[ch child-node]]
              (tree->seq-recursive child-node (cons ch prefix)))
