@@ -51,7 +51,6 @@
                   (tree/tree-equal? (tree/tree-remove t word) t))))
 
 ;; Преобразование в последовательность
-
 (defspec seq-contains-all-words 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [t (reduce tree/add tree/empty-tree words)
@@ -69,41 +68,41 @@
   (prop/for-all [_ (gen/return nil)]
                 (empty? (tree/tree->seq tree/empty-tree))))
 
-;; Map and filter
+;; Map и filter через стандартные протоколы
 (defspec map-preserves-size 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [t (reduce tree/add tree/empty-tree words)
-                      t' (tree/map-tree str/upper-case t)]
+                      mapped-words (map str/upper-case t)]
                   (= (count (tree/tree->seq t))
-                     (count (tree/tree->seq t'))))))
+                     (count mapped-words)))))
 
 (defspec filter-reduces-or-preserves-size 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [t (reduce tree/add tree/empty-tree words)
-                      t' (tree/filter-tree #(> (count %) 3) t)]
-                  (<= (count (tree/tree->seq t'))
+                      filtered-words (filter #(> (count %) 3) t)]
+                  (<= (count filtered-words)
                       (count (tree/tree->seq t))))))
 
 (defspec filter-predicate-holds 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [pred #(> (count %) 2)
                       t (reduce tree/add tree/empty-tree words)
-                      t' (tree/filter-tree pred t)]
-                  (every? pred (tree/tree->seq t')))))
+                      filtered-words (filter pred t)]
+                  (every? pred filtered-words))))
 
-;; Свёртки
-(defspec reduce-left-equals-reduce 100
+;; Свёртки через стандартный reduce
+(defspec reduce-works-correctly 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [t (reduce tree/add tree/empty-tree words)
                       f (fn [acc w] (+ acc (count w)))
-                      result1 (tree/reduce-left f 0 t)
+                      result1 (reduce f 0 t)
                       result2 (reduce f 0 (tree/tree->seq t))]
                   (= result1 result2))))
 
-(defspec reduce-right-reverses-order 100
+(defspec reduce-with-reverse 100
   (prop/for-all [words tree-gen/gen-word-list]
                 (let [t (reduce tree/add tree/empty-tree words)
-                      result (tree/reduce-right conj [] t)
+                      result (reduce conj [] (reverse (seq t)))
                       expected (reverse (tree/tree->seq t))]
                   (= result expected))))
 
@@ -143,3 +142,29 @@
                       m1 (tree/mappend t1 t2)
                       m2 (tree/mappend t2 t1)]
                   (tree/tree-equal? m1 m2))))
+
+;; Counted: count согласован с количеством элементов в seq
+(defspec count-equals-seq-size 100
+  (prop/for-all [words tree-gen/gen-word-list]
+                (let [t (reduce tree/add tree/empty-tree words)]
+                  (= (count t) (count (seq t))))))
+
+;; ILookup и Associative: get/contains? согласованы с tree-contains?
+(defspec lookup-consistent-with-contains 100
+  (prop/for-all [t tree-gen/gen-tree
+                 word tree-gen/gen-word]
+                (let [contains-result (tree/tree-contains? t word)
+                      get-result (get t word)
+                      contains-key-result (contains? t word)]
+                  (and (= contains-result contains-key-result)
+                       (if contains-result
+                         (true? get-result)
+                         (nil? get-result))))))
+
+;; Associative: assoc эквивалентен add
+(defspec assoc-equivalent-to-add 100
+  (prop/for-all [t tree-gen/gen-tree
+                 word tree-gen/gen-word]
+                (let [t-assoc (assoc t word true)
+                      t-add (tree/add t word)]
+                  (tree/tree-equal? t-assoc t-add))))

@@ -1,10 +1,8 @@
 (ns prefix-tree.unit-test
   (:require [clojure.test :refer [deftest testing is]]
             [clojure.string :as str]
-            [prefix-tree.core :refer [add empty-tree filter-tree map-tree
-                                      mappend reduce-left reduce-right
-                                      tree->seq tree-contains? tree-equal?
-                                      tree-remove]]))
+            [prefix-tree.core :refer [add empty-tree mappend tree->seq
+                                      tree-contains? tree-equal? tree-remove]]))
 
 (deftest add-and-contains-test
   (testing "Добавление и проверка слов"
@@ -46,21 +44,58 @@
       (is (empty? (tree->seq empty-tree))))))
 
 (deftest map-filter-reduce-test
-  (testing "Операции map, filter и reduce"
+  (testing "Операции map, filter и reduce через стандартные протоколы"
     (let [words ["a" "i" "in" "inn" "tea" "ted" "ten" "to"]
           tree (reduce add empty-tree words)]
-      (testing "map-tree"
-        (let [mapped-tree (map-tree str/upper-case tree)
+      (testing "map через Seqable"
+        (let [mapped-words (map str/upper-case tree)
               expected-words #{"A" "I" "IN" "INN" "TEA" "TED" "TEN" "TO"}]
-          (is (= expected-words (set (tree->seq mapped-tree))))))
-      (testing "filter-tree"
-        (let [filtered-tree (filter-tree #(> (count %) 2) tree)
+          (is (= expected-words (set mapped-words)))))
+      (testing "filter через Seqable"
+        (let [filtered-words (filter #(> (count %) 2) tree)
               expected-words #{"inn" "tea" "ted" "ten"}]
-          (is (= expected-words (set (tree->seq filtered-tree))))))
-      (testing "reduce-left"
-        (is (= 18 (reduce-left (fn [acc v] (+ acc (count v))) 0 tree))))
-      (testing "reduce-right"
-        (is (= "to ten ted tea inn in i a" (str/join " " (reduce-right conj [] tree))))))))
+          (is (= expected-words (set filtered-words)))))
+      (testing "reduce через Seqable"
+        (is (= 18 (reduce (fn [acc v] (+ acc (count v))) 0 tree))))
+      (testing "reduce с reverse для правой свёртки"
+        (is (= "to ten ted tea inn in i a"
+               (str/join " " (reduce conj [] (reverse (seq tree))))))))))
+
+(deftest collection-protocols-test
+  (testing "Стандартные протоколы коллекций Clojure"
+    (let [tree (reduce add empty-tree ["a" "b" "c"])]
+      (testing "Seqable - seq"
+        (is (seq? (seq tree)))
+        (is (= #{"a" "b" "c"} (set (seq tree)))))
+      
+      (testing "Counted - count"
+        (is (= 3 (count tree)))
+        (is (= 0 (count empty-tree))))
+      
+      (testing "IPersistentCollection - conj"
+        (let [tree2 (conj tree "d")]
+          (is (tree-contains? tree2 "d"))
+          (is (= 4 (count tree2)))))
+      
+      (testing "IPersistentCollection - empty"
+        (is (tree-equal? empty-tree (empty tree))))
+      
+      (testing "ILookup - get"
+        (is (true? (get tree "a")))
+        (is (nil? (get tree "z")))
+        (is (= :not-found (get tree "z" :not-found))))
+      
+      (testing "Associative - contains?"
+        (is (contains? tree "a"))
+        (is (not (contains? tree "z"))))
+      
+      (testing "Associative - assoc"
+        (let [tree2 (assoc tree "d" true)]
+          (is (tree-contains? tree2 "d"))))
+      
+      (testing "IFn - вызов как функция"
+        (is (true? (tree "a")))
+        (is (false? (tree "z")))))))
 
 (deftest monoid-and-equality-test
   (testing "Свойства моноида и равенство"

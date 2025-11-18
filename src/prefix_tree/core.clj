@@ -26,30 +26,6 @@
   [tree]
   (api/tree-to-seq tree))
 
-(defn map-tree
-  "Применяет функцию f к каждому слову в дереве"
-  [f tree]
-  (api/tree-map tree f))
-
-(defn filter-tree
-  "Фильтрует слова в дереве по предикату p"
-  [p tree]
-  (api/tree-filter tree p))
-
-(defn reduce-left
-  "Свёртка дерева слева направо (лексикографически)"
-  ([f tree]
-   (api/tree-reduce-left tree f))
-  ([f init tree]
-   (api/tree-reduce-left tree f init)))
-
-(defn reduce-right
-  "Свёртка дерева справа налево (обратный лексикографический порядок)"
-  ([f tree]
-   (api/tree-reduce-right tree f))
-  ([f init tree]
-   (api/tree-reduce-right tree f init)))
-
 (defn mappend
   "Объединяет два префиксных дерева (моноид)"
   [tree1 tree2]

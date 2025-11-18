@@ -3,7 +3,7 @@
 
 (declare remove-recursive tree->seq-recursive mappend tree-equal?)
 
-(defrecord PrefixTree [data]
+(deftype PrefixTree [data]
   api/IPrefixTree
 
   (tree-add [_ word]
@@ -20,31 +20,52 @@
   (tree-to-seq [_]
     (tree->seq-recursive data []))
 
-  (tree-map [this f]
-    (let [empty (PrefixTree. {})]
-      (reduce api/tree-add empty (map f (api/tree-to-seq this)))))
-
-  (tree-filter [this pred]
-    (let [empty (PrefixTree. {})]
-      (reduce api/tree-add empty (filter pred (api/tree-to-seq this)))))
-
-  (tree-reduce-left [this f]
-    (reduce f (api/tree-to-seq this)))
-
-  (tree-reduce-left [this f init]
-    (reduce f init (api/tree-to-seq this)))
-
-  (tree-reduce-right [this f]
-    (reduce f (reverse (api/tree-to-seq this))))
-
-  (tree-reduce-right [this f init]
-    (reduce f init (reverse (api/tree-to-seq this))))
-
   (tree-merge [_ other]
-    (PrefixTree. (mappend data (:data other))))
+    (PrefixTree. (mappend data (.data other))))
 
   (tree-equal? [_ other]
-    (tree-equal? data (:data other))))
+    (tree-equal? data (.data other))) 
+ 
+  clojure.lang.Seqable
+  (seq [this]
+    (seq (api/tree-to-seq this)))
+  
+  clojure.lang.Counted
+  (count [this]
+    (clojure.core/count (api/tree-to-seq this)))
+  
+  clojure.lang.IPersistentCollection
+  (cons [this word]
+    (api/tree-add this word))
+  
+  (empty [_]
+    (PrefixTree. {}))
+  
+  (equiv [_ other]
+    (and (instance? PrefixTree other)
+         (tree-equal? data (.data other))))
+  
+  clojure.lang.ILookup
+  (valAt [this word]
+    (when (api/tree-contains? this word) true))
+  
+  (valAt [this word not-found]
+    (if (api/tree-contains? this word) true not-found))
+  
+  clojure.lang.Associative
+  (containsKey [this word]
+    (api/tree-contains? this word))
+  
+  (entryAt [this word]
+    (when (api/tree-contains? this word)
+      (clojure.lang.MapEntry/create word true)))
+  
+  (assoc [this word _]
+    (api/tree-add this word))
+  
+  clojure.lang.IFn
+  (invoke [this word]
+    (api/tree-contains? this word)))
 
 (defn- remove-recursive
   "Рекурсивно удаляет слово и очищает пустые узлы"
